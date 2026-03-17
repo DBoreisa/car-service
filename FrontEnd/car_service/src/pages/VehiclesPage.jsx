@@ -1,19 +1,14 @@
 import { useEffect, useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
-} from "@mui/material";
 import api from "../api/api";
+import VehicleDialog from "../components/VehicleDialog";
+import VehiclesTable from "../components/VehiclesTable";
 
 const VehiclesPage = () => {
     const [vehicles, setVehicles] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         vin: "",
@@ -28,8 +23,10 @@ const VehiclesPage = () => {
     }, []);
 
     const fetchVehicles = async () => {
+        setLoading(true);
         const res = await api.get("vehicles/");
         setVehicles(res.data);
+        setLoading(false);
     };
 
     const handleAddVehicle = () => {
@@ -44,15 +41,26 @@ const VehiclesPage = () => {
         setOpenDialog(true);
     };
 
-    const handleChange = (e) => {
+    const handleEdit = (vehicle) => {
+        setSelectedVehicle(vehicle);
         setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+            vin: vehicle.vin,
+            plate_number: vehicle.plate_number,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            year: vehicle.year
+        }); // pre-fill form with existing data, id not included because backend may reject it
+        setOpenDialog(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Delete this vehicle?")) return;
+        await api.delete(`vehicles/${id}/`);
+        fetchVehicles(); // reload table
     };
 
     const handleSave = async () => {
-        try{
+        try {
             if (selectedVehicle) {
             // Update existing vehicle
                 await api.put(`vehicles/${selectedVehicle.id}/`, formData);
@@ -64,54 +72,11 @@ const VehiclesPage = () => {
             fetchVehicles(); // reload table
         }
         catch(error) {
+            console.log("BACKEND ERROR:", error.response?.data);
             console.error("Error saving vehicle:", error);
             alert("Failed to save vehicle");
         }
     };
-
-    const editVehicle = (vehicle) => {
-        setSelectedVehicle(vehicle);
-        setFormData(vehicle);
-        setOpenDialog(true);
-    };
-
-    const deleteVehicle = async (id) => {
-        if (!window.confirm("Delete this vehicle?")) return;
-
-        await api.delete(`vehicles/${id}/`);
-        fetchVehicles(); // reload table
-    };
-
-    const columns = [
-        { field: "id", headerName: "ID", width: 90 },
-        { field: "vin", headerName: "VIN", width: 200 },
-        { field: "plate_number", headerName: "Plate", width: 120 },
-        { field: "brand", headerName: "Brand", width: 150 },
-        { field: "model", headerName: "Model", width: 150 },
-        { field: "year", headerName: "Year", width: 120 },
-        {
-            field: "actions",
-            headerName: "Actions",
-            width: 200,
-            renderCell: (params) => (
-                <>
-                    <Button
-                        size="small"
-                        onClick={() => editVehicle(params.row)}
-                    >
-                        Edit
-                    </Button>
-                    <Button
-                        size="small"
-                        color="error"
-                        onClick={() => deleteVehicle(params.row.id)}
-                    >
-                        Delete
-                    </Button>
-                </>
-            )
-        },
-    ];
 
     return (
         <>
@@ -122,57 +87,22 @@ const VehiclesPage = () => {
                 <Button variant="contained" sx={{ mb: 2 }} onClick={handleAddVehicle}>
                     Add Vehicle
                 </Button>
-                <DataGrid
-                    rows={vehicles}
-                    columns={columns}
-                    pageSize={10}
-                    autoHeight
+                <VehiclesTable
+                    vehicles={vehicles}
+                    loading={loading}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                />
+
+                <VehicleDialog
+                    open={openDialog}
+                    onClose={() => setOpenDialog(false)}
+                    formData={formData}
+                    setFormData={setFormData}
+                    onSave={handleSave}
+                    isEdit={!!selectedVehicle}
                 />
             </Box>
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-                <DialogTitle>{selectedVehicle ? "Edit Vehicle" : "Add Vehicle"}</DialogTitle>
-                <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-
-                    <TextField
-                        label="VIN"
-                        name="vin"
-                        value={formData.vin}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Plate Number"
-                        name="plate_number"
-                        value={formData.plate_number}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Brand"
-                        name="brand"
-                        value={formData.brand}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Model"
-                        name="model"
-                        value={formData.model}
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Year"
-                        name="year"
-                        value={formData.year}
-                        onChange={handleChange}
-                    />
-
-                </DialogContent>
-
-                <DialogActions>
-                    <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleSave}>
-                        Save
-                    </Button>
-                </DialogActions>
-            </Dialog>
         </>
     );
 };
