@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import api from "../api/api";
 import VehicleDialog from "../components/VehicleDialog";
 import VehiclesTable from "../components/VehiclesTable";
 
 const VehiclesPage = () => {
-    const [vehicles, setVehicles] = useState([]);
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0); // to trigger table refresh
 
     const [formData, setFormData] = useState({
         vin: "",
@@ -17,17 +16,6 @@ const VehiclesPage = () => {
         model: "",
         year: ""
     });
-
-    useEffect(() => {
-        fetchVehicles();
-    }, []);
-
-    const fetchVehicles = async () => {
-        setLoading(true);
-        const res = await api.get("vehicles/");
-        setVehicles(res.data);
-        setLoading(false);
-    };
 
     const handleAddVehicle = () => {
         setSelectedVehicle(null);
@@ -56,7 +44,7 @@ const VehiclesPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this vehicle?")) return;
         await api.delete(`vehicles/${id}/`);
-        fetchVehicles(); // reload table
+        setRefreshTrigger(prev => prev + 1); // refresh
     };
 
     const handleSave = async () => {
@@ -65,11 +53,11 @@ const VehiclesPage = () => {
             // Update existing vehicle
                 await api.put(`vehicles/${selectedVehicle.id}/`, formData);
             } else {
-                // Create new vehicle
+            // Create new vehicle
                 await api.post("vehicles/", formData);
             }
             setOpenDialog(false);
-            fetchVehicles(); // reload table
+            setRefreshTrigger(prev => prev + 1); // refresh
         }
         catch(error) {
             console.log("BACKEND ERROR:", error.response?.data);
@@ -88,10 +76,9 @@ const VehiclesPage = () => {
                     Add Vehicle
                 </Button>
                 <VehiclesTable
-                    vehicles={vehicles}
-                    loading={loading}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    refreshTrigger={refreshTrigger} // pass trigger to table
                 />
 
                 <VehicleDialog

@@ -1,7 +1,40 @@
+import { useState, useEffect, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Button } from "@mui/material";
+import { Button, Box, TextField } from "@mui/material";
+import api from "../../api/api";
 
-const VehiclesTable = ({ vehicles, loading, onEdit, onDelete }) => {
+const VehiclesTable = ({ 
+    onEdit, 
+    onDelete, 
+    refreshTrigger,
+    pageSize = 15,
+}) => {
+
+    const [vehicles, setVehicles] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const [filters, setFilters] = useState({
+        search: "",
+        year: ""
+    });
+
+    const fetchVehicles = useCallback (async () => {
+        const params = {limit: pageSize};
+
+        setLoading(true);
+
+        if (filters.search) params.search = filters.search;
+        if (filters.year) params.year = filters.year;
+        
+        const res = await api.get("vehicles/", { params });
+        setVehicles(res.data);
+        setLoading(false);
+    }, [filters, pageSize]);
+
+    useEffect(() => { 
+        fetchVehicles(); 
+    }, [fetchVehicles, refreshTrigger]); // also refetch when trigger changes
+
     const columns = [
         { field: "id", headerName: "ID", width: 90 },
         { field: "vin", headerName: "VIN", width: 200 },
@@ -34,13 +67,30 @@ const VehiclesTable = ({ vehicles, loading, onEdit, onDelete }) => {
     ];
 
     return (
-        <DataGrid
-            rows={vehicles}
-            columns={columns}
-            pageSize={10}
-            autoHeight
-            loading={loading}
-        />
+        <>
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                <TextField
+                    label="Search"
+                    value={filters.search}
+                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                />
+
+                <TextField
+                    label="Year"
+                    type="number"
+                    value={filters.year}
+                    onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                />
+
+            </Box>
+            <DataGrid
+                rows={vehicles}
+                columns={columns}
+                pageSize={pageSize}
+                autoHeight
+                loading={loading}
+            />
+        </>
     );
 };
 

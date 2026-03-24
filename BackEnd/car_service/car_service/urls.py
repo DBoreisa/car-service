@@ -30,7 +30,7 @@ from rest_framework_simplejwt.views import (
 )
 
 router = DefaultRouter()
-router.register(r'vehicles', VehicleViewSet)
+router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'services', ServiceViewSet)
 router.register(r'jobs', JobViewSet)
 
