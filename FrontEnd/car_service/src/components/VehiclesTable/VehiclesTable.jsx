@@ -7,11 +7,14 @@ const VehiclesTable = ({
     onEdit, 
     onDelete, 
     refreshTrigger,
-    pageSize = 15,
+    initialPageSize = 10
 }) => {
 
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(0); // DataGrid is 0-based
+    const [pageSize, setPageSize] = useState(initialPageSize); 
+    const [rowCount, setRowCount] = useState(0); 
 
     const [filters, setFilters] = useState({
         search: "",
@@ -19,21 +22,30 @@ const VehiclesTable = ({
     });
 
     const fetchVehicles = useCallback (async () => {
-        const params = {limit: pageSize};
-
         setLoading(true);
+        try {
+            const params = {
+                page: page + 1, // backend is 1-based
+                page_size: pageSize
+            };
 
-        if (filters.search) params.search = filters.search;
-        if (filters.year) params.year = filters.year;
-        
-        const res = await api.get("vehicles/", { params });
-        setVehicles(res.data);
-        setLoading(false);
+            if (filters.search) params.search = filters.search;
+            if (filters.year) params.year = filters.year;
+            
+            const res = await api.get("vehicles/", { params });
+            setVehicles(res.data.results);
+            setRowCount(res.data.count);
+        } catch (error) {
+            console.error("Failed to fetch vehicles:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [filters, pageSize, page]);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(0);
     }, [filters, pageSize]);
-
-    useEffect(() => { 
-        fetchVehicles(); 
-    }, [fetchVehicles, refreshTrigger]); // also refetch when trigger changes
 
     const columns = [
         { field: "id", headerName: "ID", width: 90 },
@@ -42,53 +54,77 @@ const VehiclesTable = ({
         { field: "brand", headerName: "Brand", width: 150 },
         { field: "model", headerName: "Model", width: 150 },
         { field: "year", headerName: "Year", width: 120 },
-        {
+    ];
+
+    if (onEdit || onDelete) {
+        columns.push({
             field: "actions",
             headerName: "Actions",
             width: 200,
             renderCell: (params) => (
                 <>
-                    <Button
-                        size="small"
-                        onClick={() => onEdit(params.row)}
-                    >
-                        Edit
-                    </Button>
-                    <Button
-                        size="small"
-                        color="error"
-                        onClick={() => onDelete(params.row.id)}
-                    >
-                        Delete
-                    </Button>
+                    {onEdit && (
+                        <Button size="small" onClick={() => onEdit(params.row)}>
+                            Edit
+                        </Button>
+                    )}
+                    {onDelete && (
+                        <Button
+                            size="small"
+                            color="error"
+                            onClick={() => onDelete(params.row.id)}
+                        >
+                            Delete
+                        </Button>
+                    )}
                 </>
             )
-        },
-    ];
+        });
+    }
 
+    useEffect(() => {
+        fetchVehicles();
+    }, [fetchVehicles, refreshTrigger]);
+    
     return (
         <>
             <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
                 <TextField
                     label="Search"
                     value={filters.search}
-                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                    onChange={(e) =>
+                        setFilters(prev => ({
+                            ...prev,
+                            search: e.target.value
+                        }))
+                    }
                 />
 
                 <TextField
                     label="Year"
                     type="number"
                     value={filters.year}
-                    onChange={(e) => setFilters({ ...filters, year: e.target.value })}
+                    onChange={(e) =>
+                        setFilters(prev => ({
+                            ...prev,
+                            year: e.target.value
+                        }))
+                    }
                 />
 
             </Box>
             <DataGrid
                 rows={vehicles}
                 columns={columns}
-                pageSize={pageSize}
                 autoHeight
                 loading={loading}
+                pagination
+                paginationMode="server"
+                rowCount={rowCount}
+                page={page}
+                pageSize={pageSize}
+                onPageChange={(newPage) => setPage(newPage)}
+                onPageSizeChange={(newSize) => setPageSize(newSize)}
             />
         </>
     );

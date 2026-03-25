@@ -4,15 +4,16 @@ from rest_framework.exceptions import PermissionDenied
 from .models import Vehicle
 from django.db.models import Q
 from .serializers import VehicleSerializer
+from .pagination import VehiclePagination
 
 class VehicleViewSet(ModelViewSet):
     serializer_class = VehicleSerializer
     permission_classes = [IsAuthenticated] # default
+    pagination_class = VehiclePagination
 
     def get_queryset(self):
         user = self.request.user
         queryset = Vehicle.objects.all()
-        limit = self.request.query_params.get('limit')
 
         # only admin sees all vehicles
         if user.role != 'ADMIN':
@@ -33,10 +34,6 @@ class VehicleViewSet(ModelViewSet):
         
         if year:
             queryset = queryset.filter(year=year)
-
-        # Apply limit if specified
-        if limit:
-            queryset = queryset[:int(limit)]
 
         return queryset
     

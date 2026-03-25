@@ -59,7 +59,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',  # default: only authenticated users
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
 
 SIMPLE_JWT = {
@@ -88,7 +90,6 @@ ROOT_URLCONF = 'car_service.urls'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
-
 
 TEMPLATES = [
     {

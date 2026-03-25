@@ -9,7 +9,7 @@ const AdminDashboard = () => {
         Manage vehicles, jobs, and users.
       </Typography>
       <VehiclesTable
-          pageSize={1}
+        initialPageSize={3}
       />
     </>
   );
