@@ -5,11 +5,16 @@ from .models import Vehicle
 from django.db.models import Q
 from .serializers import VehicleSerializer
 from .pagination import VehiclePagination
+from rest_framework.filters import OrderingFilter
 
 class VehicleViewSet(ModelViewSet):
     serializer_class = VehicleSerializer
     permission_classes = [IsAuthenticated] # default
     pagination_class = VehiclePagination
+
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['vin', 'plate_number', 'brand', 'model', 'year']
+    ordering = ['-id'] # default ordering
 
     def get_queryset(self):
         user = self.request.user
