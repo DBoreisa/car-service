@@ -22,7 +22,7 @@ from vehicles.views import VehicleViewSet
 from services.views import ServiceViewSet
 from jobs.views import JobViewSet
 from rest_framework.routers import DefaultRouter
-from users.views import LogoutView, LoginView
+from users.views import LogoutView, LoginView, UserViewSet
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -33,6 +33,7 @@ router = DefaultRouter()
 router.register(r'vehicles', VehicleViewSet, basename='vehicle')
 router.register(r'services', ServiceViewSet)
 router.register(r'jobs', JobViewSet)
+router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

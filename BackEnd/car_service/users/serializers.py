@@ -6,6 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'phone_number', 'role']
+        read_only_fields = ['role']
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 

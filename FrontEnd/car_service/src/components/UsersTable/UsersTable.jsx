@@ -1,8 +1,8 @@
 import { DataGrid } from "@mui/x-data-grid";
-import { Button, Box, TextField } from "@mui/material";
+import { Button } from "@mui/material";
 import useDataTable from "../../hooks/useDataTable";
 
-const VehiclesTable = ({ onEdit, onDelete, initialPageSize = 10 }) => {
+const UsersTable = ({ onEdit, onDelete, initialPageSize = 10 }) => {
 
     const {
         rows,
@@ -14,20 +14,17 @@ const VehiclesTable = ({ onEdit, onDelete, initialPageSize = 10 }) => {
         rowCount,
         sortModel,
         setSortModel,
-        filters,
-        setFilters,
     } = useDataTable({
-        endpoint: "vehicles/",
+        endpoint: "users/",
         initialPageSize
     });
 
     const columns = [
         { field: "id", headerName: "ID", width: 90 },
-        { field: "vin", headerName: "VIN", width: 200 },
-        { field: "plate_number", headerName: "Plate", width: 120 },
-        { field: "brand", headerName: "Brand", width: 150 },
-        { field: "model", headerName: "Model", width: 150 },
-        { field: "year", headerName: "Year", width: 120 },
+        { field: "username", headerName: "Username", width: 150 },
+        { field: "email", headerName: "Email", width: 200 },
+        { field: "phone_number", headerName: "Phone", width: 150 },
+        { field: "role", headerName: "Role", width: 120 },
     ];
 
     if (onEdit || onDelete) {
@@ -55,34 +52,9 @@ const VehiclesTable = ({ onEdit, onDelete, initialPageSize = 10 }) => {
             )
         });
     }
-    
+
     return (
         <>
-            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                <TextField
-                    label="Search"
-                    value={filters.search || ""}
-                    onChange={(e) =>
-                        setFilters(prev => ({
-                            ...prev,
-                            search: e.target.value
-                        }))
-                    }
-                />
-
-                <TextField
-                    label="Year"
-                    type="number"
-                    value={filters.year || ""}
-                    onChange={(e) =>
-                        setFilters(prev => ({
-                            ...prev,
-                            year: e.target.value
-                        }))
-                    }
-                />
-
-            </Box>
             <DataGrid
                 rows={rows}
                 columns={columns}
@@ -103,4 +75,4 @@ const VehiclesTable = ({ onEdit, onDelete, initialPageSize = 10 }) => {
     );
 };
 
-export default VehiclesTable;
+export default UsersTable;

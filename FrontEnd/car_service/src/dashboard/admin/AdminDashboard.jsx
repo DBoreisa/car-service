@@ -1,5 +1,6 @@
 import { Typography } from "@mui/material";
 import VehiclesTable from "../../components/VehiclesTable";
+import UsersTable from "../../components/UsersTable";
 
 const AdminDashboard = () => {
   return (
@@ -9,6 +10,9 @@ const AdminDashboard = () => {
         Manage vehicles, jobs, and users.
       </Typography>
       <VehiclesTable
+        initialPageSize={3}
+      />
+      <UsersTable
         initialPageSize={3}
       />
     </>
