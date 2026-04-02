@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
-import { HomePage, LoginPage, DashboardPage, VehiclesPage } from "./pages";
+import { HomePage, LoginPage, DashboardPage, VehiclesPage, UsersPage } from "./pages";
 
 function App() {
   //const { user, logout } = useAuth();
@@ -23,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMIN", "CUSTOMER"]}>
               <VehiclesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <UsersPage />
             </ProtectedRoute>
           }
         />
