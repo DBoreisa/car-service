@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import api from "../api/api";
 import UsersTable from "../components/UsersTable";
+import FormDialog from "../components/FormDialog";
 
 const UsersPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
@@ -14,6 +15,12 @@ const UsersPage = () => {
         phone_number: "",
         role: ""
     });
+
+    const userFields = [
+        { name: "username", label: "Username", sx: { mt: 2 } },
+        { name: "email", label: "Email" },
+        { name: "phone_number", label: "Phone Number" },
+    ];
 
     const handleEdit = (user) => {
         setSelectedUser(user);
@@ -59,13 +66,15 @@ const UsersPage = () => {
                     refreshTrigger={refreshTrigger} // pass trigger to table
                 />
 
-                <UserDialog
+                <FormDialog
                     open={openDialog}
                     onClose={() => setOpenDialog(false)}
                     formData={formData}
                     setFormData={setFormData}
                     onSave={handleSave}
                     isEdit={!!selectedUser}
+                    title="User"
+                    fields={userFields}
                 />
             </Box>
         </>

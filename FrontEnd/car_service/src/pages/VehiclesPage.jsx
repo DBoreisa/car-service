@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import api from "../api/api";
-import VehicleDialog from "../components/VehicleDialog";
+import FormDialog from "../components/FormDialog";
 import VehiclesTable from "../components/VehiclesTable";
 
 const VehiclesPage = () => {
@@ -16,6 +16,14 @@ const VehiclesPage = () => {
         model: "",
         year: ""
     });
+
+    const vehicleFields = [
+        { name: "vin", label: "VIN", sx: { mt: 2 } },
+        { name: "plate_number", label: "Plate Number" },
+        { name: "brand", label: "Brand" },
+        { name: "model", label: "Model" },
+        { name: "year", label: "Year", type: "number" },
+    ];
 
     const handleAddVehicle = () => {
         setSelectedVehicle(null);
@@ -81,13 +89,15 @@ const VehiclesPage = () => {
                     refreshTrigger={refreshTrigger} // pass trigger to table
                 />
 
-                <VehicleDialog
+                <FormDialog
                     open={openDialog}
                     onClose={() => setOpenDialog(false)}
                     formData={formData}
                     setFormData={setFormData}
                     onSave={handleSave}
                     isEdit={!!selectedVehicle}
+                    title="Vehicle"
+                    fields={vehicleFields}
                 />
             </Box>
         </>
