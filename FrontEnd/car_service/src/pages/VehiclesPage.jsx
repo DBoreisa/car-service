@@ -8,14 +8,15 @@ const VehiclesPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [refreshTrigger, setRefreshTrigger] = useState(0); // to trigger table refresh
-
-    const [formData, setFormData] = useState({
+    const initialVehicleData = {
         vin: "",
         plate_number: "",
         brand: "",
         model: "",
         year: ""
-    });
+    };
+
+    const [formData, setFormData] = useState(initialVehicleData);
 
     const vehicleFields = [
         { name: "vin", label: "VIN", sx: { mt: 2 } },
@@ -27,13 +28,7 @@ const VehiclesPage = () => {
 
     const handleAddVehicle = () => {
         setSelectedVehicle(null);
-        setFormData({
-            vin: "",
-            plate_number: "",
-            brand: "",
-            model: "",
-            year: ""
-        });
+        setFormData(initialVehicleData); // reset form for new entry
         setOpenDialog(true);
     };
 
@@ -64,7 +59,7 @@ const VehiclesPage = () => {
             // Create new vehicle
                 await api.post("vehicles/", formData);
             }
-            setOpenDialog(false);
+            handleClose();
             setRefreshTrigger(prev => prev + 1); // refresh
         }
         catch(error) {
@@ -72,6 +67,12 @@ const VehiclesPage = () => {
             console.error("Error saving vehicle:", error);
             alert("Failed to save vehicle");
         }
+    };
+
+    const handleClose = () => {
+        setOpenDialog(false);
+        setSelectedVehicle(null);
+        setFormData(initialVehicleData); // reset form on close
     };
 
     return (
@@ -91,7 +92,7 @@ const VehiclesPage = () => {
 
                 <FormDialog
                     open={openDialog}
-                    onClose={() => setOpenDialog(false)}
+                    onClose={handleClose}
                     formData={formData}
                     setFormData={setFormData}
                     onSave={handleSave}

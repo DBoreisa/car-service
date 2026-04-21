@@ -10,12 +10,15 @@ class JobViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # Admin see all jobs
+
+        queryset = Job.objects.select_related(
+            'vehicle', 'vehicle__owner', 'mechanic'
+        ).prefetch_related('services')
+
         if user.role == 'ADMIN':
-            return Job.objects.all()
-        # Mechanics see only their assigned jobs
+            return queryset
+
         if user.role == 'MECHANIC':
-            return Job.objects.filter(mechanic=user)
-        # Customers see only jobs for their vehicles
-        else:
-            return Job.objects.filter(vehicle__owner=user)
+            return queryset.filter(mechanic=user)
+
+        return queryset.filter(vehicle__owner=user)

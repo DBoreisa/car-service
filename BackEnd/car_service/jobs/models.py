@@ -13,7 +13,6 @@ class Job(models.Model):
     ]
 
     vehicle = models.ForeignKey('vehicles.Vehicle', on_delete=models.CASCADE, related_name='jobs')
-    customer = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='jobs')
     mechanic = models.ForeignKey('users.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_jobs')
     services = models.ManyToManyField('services.Service', related_name='jobs')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING, db_index=True)
